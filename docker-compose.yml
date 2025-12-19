@@ -1,0 +1,33 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: ligas-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ligasdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  api:
+    build: .
+    container_name: ligas-api
+    depends_on:
+      - db
+    environment:
+      DB_URL: jdbc:mysql://db:3306/ligasdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: root
+      DB_PASS: root
+
+      JWT_SECRET: "9KfR7TnQ5ZC8b2A0MExJH4yPVsD1rUqL6pYcWmN8Gtao3iSeBvFhXk"
+      JWT_EXP_MS: "86400000"
+
+      ADMIN_EMAIL: "admin@upiiz.com"
+      ADMIN_PASS: "Admin12345"
+      ADMIN_NAME: "ADMIN"
+    ports:
+      - "8080:8080"
+
+volumes:
+  dbdata:
