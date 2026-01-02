@@ -10,7 +10,8 @@ import java.util.Optional;
 
 public interface EquipoRepository extends JpaRepository<Equipo, Long> {
 
-    // GET /api/equipos
+    // ====== FIX Lazy / no session (para /api/equipos) ======
+
     @Query("""
            SELECT e
            FROM Equipo e
@@ -19,7 +20,6 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
            """)
     List<Equipo> findAllWithRefs();
 
-    // GET /api/equipos/{id}
     @Query("""
            SELECT e
            FROM Equipo e
@@ -29,7 +29,6 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
            """)
     Optional<Equipo> findByIdWithRefs(@Param("id") Long id);
 
-    // GET /api/equipos/liga/{ligaId}
     @Query("""
            SELECT e
            FROM Equipo e
@@ -38,4 +37,26 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
            WHERE l.id = :ligaId
            """)
     List<Equipo> findByLigaIdWithRefs(@Param("ligaId") Long ligaId);
+
+
+    // ====== STATS (para que compile StatsService) ======
+    // Estos regresan "raw" (arreglos) para que StatsService los transforme.
+
+    // Top equipos por partidos ganados
+    @Query("""
+           SELECT e.nombre, e.partidosGanados
+           FROM Equipo e
+           ORDER BY e.partidosGanados DESC
+           """)
+    List<Object[]> topGanadosRaw();
+
+    // Conteo de equipos por liga
+    @Query("""
+           SELECT l.nombre, COUNT(e.id)
+           FROM Equipo e
+           JOIN e.liga l
+           GROUP BY l.nombre
+           ORDER BY COUNT(e.id) DESC
+           """)
+    List<Object[]> equiposPorLigaRaw();
 }
